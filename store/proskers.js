@@ -1,37 +1,51 @@
 import extaerProskers from '../middleware/extraerProskers'
 
 export const state = () => ({
-	datos:[],
+	datos: [],
 	error: null,
 	cargando: true,
-	cantidad: 0
+	cantidad: 0,
+	proskersDestacados: []
 })
 
 export const mutations = {
-	cargarProskers(state){
-		extaerProskers({idEnc: "hXwuDUKromgcZVpNrNDjfQ=="}).then(contenido =>{
-			state.proskers.datos = contenido
-			state.proskers.cargando = false
-			state.proskers.cantidad = contenido.length
-			contenido.forEach(e=>{
-				var registroDatos = {}
-				e.Categories.forEach(e2=>{
-					if (e2.SkillFeaturedOrder!=0) {
-						registroDatos.idCat = e2.WorkFieldId
-						registroDatos.nombreCategoria = e2.WorkFieldName
+	cargarProskers(state, contenido, error) {
+		if (!error) {
+			state.datos = contenido
+			state.cargando = false
+			if (contenido) {
+				state.cantidad = contenido.length
+				contenido.forEach(e => {
+					var registroDatos = {}
+					e.Categories.forEach(e2 => {
+						if (e2.SkillFeaturedOrder != 0) {
+							registroDatos.idCat = e2.WorkFieldId
+							registroDatos.nombreCategoria = e2.WorkFieldName
+						}
+					})
+					if (registroDatos.idCat) {
+						registroDatos.nombre = e.nombre
+						registroDatos.idEnc = e.idEnc
+						registroDatos.foto = e.UserPhotoImageUrl
+						state.proskersDestacados.push(registroDatos)
 					}
 				})
-				if (registroDatos.idCat) {
-					registroDatos.nombre = e.nombre
-					registroDatos.idEnc = e.idEnc
-					registroDatos.foto = e.UserPhotoImageUrl
-					state.proskersDestacados.push(registroDatos)
-				}
-			})
-		}).catch(error => {
-			state.proskers.error = error
-		})
+			}
+
+		} else {
+			state.error = error
+		}
 	},
+}
 
 
+export const actions = {
+	async getProskers({ commit }) {
+		await extaerProskers({ idEnc: "hXwuDUKromgcZVpNrNDjfQ==" })
+			.then(contenido => {
+				commit('cargarProskers', contenido, null)
+			}).catch(error => {
+				commit('cargarProskers', null, error)
+			})
+	},
 }

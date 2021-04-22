@@ -9,11 +9,7 @@ export default (entrada) =>new Promise ((resolve, reject) => {
         } else if (!response.data.ErrorSDT) {
             reject('No hay retorno del ErrorSDT')
         } else if (response.data.ErrorSDT.ErrorCode === 0) {
-			// publicaciones = response.data.frontProsker
-			// finEnc = response.data.finEnc
            resolve(response.data.frontNomUsuario)
-		   console.log (response)
-
         } else {
             reject(response.data.ErrorSDT.ErrorDescription)
         }

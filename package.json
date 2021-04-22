@@ -14,7 +14,10 @@
     "core-js": "^3.8.3",
     "nuxt": "^2.14.12",
     "nuxt-material-design-icons": "^1.0.4",
-    "nuxt-ssr-screen-size": "^1.0.0"
+    "nuxt-ssr-screen-size": "^1.0.0",
+    "swiper": "^6.5.7",
+    "vue-awesome-swiper": "^4.1.1",
+    "vue2-google-maps": "^0.10.7"
   },
   "devDependencies": {}
 }

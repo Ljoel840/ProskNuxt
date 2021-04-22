@@ -71,7 +71,7 @@ export default {
 			this.$router.push({
 				name: pag, 
 				params: {data}
-			}).catch(() => {})
+			}) 
 		},
 	},
 }

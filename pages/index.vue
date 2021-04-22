@@ -1,294 +1,424 @@
 <template>
-	<section>
-		<div class="fondoTitulo">
-		</div>
-		<div class="contenedorPrincipal">
-			<img src="@/assets/img/f_blog.jpg" alt="Blog" class="fondoBlog">
-			<div class="titulos">
-				<h1>Blog</h1>
-				<h3>En este blog podrás encontrar todo lo relacionado a trabajo, empresas, candidatos, buenas prácticas, tecnología, tips ¡y más!</h3>
-			</div>
-			<div class="flag">
-			</div>
-			<h2>Categorías</h2>	
-			<button class="tags" :class="opcion===null ? 'botonActivo' : null" @click="opcion=null">TODOS</button>
-			<button v-for="(b,indexB) in blogTags.datos" :key="indexB" class="tags" :class="opcion===b.BlogTagId ? 'botonActivo' : null" @click="opcion=b.BlogTagId">{{b.BlogTagName}}</button>
-			<div class="contenedor">
-				<div class="blogs" v-for="(d,index) in listaBlog" :key="index">
-					<img class="imgBlog" :src="d.BlogPostHeaderImage" @click="ir('titleBlog',d)">
-					<p class="fechaBlog">{{cambiarFecha(d.BlogPostDatePublished)}}</p>
-					<h3 class="tituloBlog"><strong>{{d.BlogPostTitle}}</strong></h3>
-					<p class="textoBlog" v-html="d.BlogPostContent.substr(0,160)+'...'"></p>
-					<button class="botonAceptar" @click="ir('titleBlog',d)">VER MÁS</button>
+	<article class="home">
+		<img alt="imagenHome" :src="slider[opcion].imagen" class="imagenHome">
+		<div class="fondo">
+			<div class="derecha">
+				<div class="textoTitulo">
+					<h1 v-html="slider[opcion].titulo"></h1>
+				</div>
+				<div class="buscar">
+					<buscar @opcion="seleccion($event)"/>
 				</div>
 			</div>
-			<h2>Otros temas que pueden interesarte</h2>
-			<button v-for="c in blogCategorias.datos" :key="c.idEnc" class="categorias"  @click="ir('categoriaBlog',c)">{{c.BlogCategoryName}}</button>
 		</div>
-	</section>
+			<span class="botones">
+				<button v-for="(idx,index) in slider.length" :key="index" :style="opcion===index ? 'background-color:#fff': null" @click="opcion=index"></button>
+			</span>
+		<redesSociales/>
+		<proskerDestacados/>
+		<categorias />
+		<publicaciones :datos="datosPublicaciones.datos" v-if="!datosPublicaciones.cargando"/>
+		<div class="banner">
+			<div>
+				<h2>Trabajas de forma independiente, querés empezar a hacerlo o trabajas en relación de dependencia y querés tener ingresos extras/ complementarios?</h2>
+				<h3>Querés manejar tus horarios? sos proactivo, innovador?, trabajas por tu cuenta y estás necesitando una red para contactar con nuevos clientes? Descargate Prosk, ármate tu perfil, publicá tus servicios y comenzá a ganar.</h3>
+				<br>
+				<button class="botonAceptar" @click="ir('Funcionamiento')">Conoce más</button>
+			</div>
+		</div>
+	</article>
 </template>
+
 <script>
+import NuxtSSRScreenSize from 'nuxt-ssr-screen-size'
 export default {
-	name: 'blog',
-	props:{
-		data:{
-			type: String,
-			default: null
-		}
+	name: 'Home',
+	mixins: [NuxtSSRScreenSize.NuxtSSRScreenSizeMixin],
+	components: {
+		publicaciones: () => import('@/components/publicaciones'),
+		categorias: () => import('@/components/categorias'),
+		buscar: () => import('@/components/buscar'),
+		proskerDestacados: () => import('@/components/proskersDestacados'),
+		redesSociales: () => import('@/components/redesSociales'),
+		// publicidad728x90: () => import('@/components/adsense/publicidad728x90'),
+		// publicidad300x250: () => import('@/components/adsense/publicidad300x250'),
+		// publicidad160x600: () => import('@/components/adsense/publicidad160x600'),
+		// publicidad320x50: () => import('@/components/adsense/publicidad320x50'),
 	},
 	data() {
 		return {
-			error: null,
-			cargandoBlog: false,
-			datos: [],
-			options : { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour12:"false" },
-			prueba:[],
-			opcion: null
+			tiempo: null,
+			opcion: 0,
+			idx: 0,
+			slider:[
+				{
+					imagen:	require('@/assets/img/slider1.jpg'),
+					titulo: 'La nueva app para promoción y contratación de profesionales independientes'
+				},
+				{
+					imagen:	require('@/assets/img/slider2.jpg'),
+					titulo: '¿Sos profesional independiente? <br>Registrate, mostrá lo que sabes hacer y contactá nuevos clientes'
+				},
+				{
+					imagen:	require('@/assets/img/slider3.jpg'),
+					titulo: '¿Necesitas contratar un profesional de confianza? <br>Descargate prosk y encontralo!'
+				},
+				{
+					imagen:	require('@/assets/img/slider4.jpg'),
+					titulo: 'Contratá gente apasionada por su trabajo, encontrá profesionales de cientos de categorías'
+				},
+				{
+					imagen:	require('@/assets/img/slider5.jpg'),
+					titulo: 'Descargate la app y convertite en prosker para contactar con tu próximo cliente'
+				},
+			]
 		}
 	},
-	created() {
-		// window.scrollTo(0, 0)
-		// console.log(this.$route)
-		if (this.blog.datos.length<=0) {
-			this.$store.dispatch('blog/getBlog')
-			this.$store.dispatch('blogTags/getTagsBlog')
-			this.$store.dispatch('blogCategorias/getCategoriasBlog')
-		}
-		this.opcion=this.data
+	mounted() {
+		this.comenzarCuentaRegresiva()
 	},
 	computed: {
-		blog(){
-			return this.$store.state.blog
+		datosPublicaciones () {
+			return this.$store.state.publicaciones
 		},
-		blogTags(){
-			return this.$store.state.blogTags
+		ancho(){
+			return this.$vssWidth
 		},
-		blogCategorias(){
-			return this.$store.state.blogCategorias
-		},
-		listaBlog(){
-			if (!this.opcion) {
-				return this.blog.datos				
-			}else{
-				return this.blog.datos.filter((item) => item.BlogPostTags.map(e=>e.BlogTagId).includes(this.opcion))
-			}
-		}
 	},
+
 	methods: {
-		cambiarFecha(fecha2){
-			let fecha = new Date(fecha2);
-			return fecha.toLocaleDateString('es-ES',this.options);
+		comenzarCuentaRegresiva(){
+			this.tiempo = setInterval(()=>this.cambiarOpcion(), 5000);
 		},
-		ir (pag,data) {
-			var titleBlog = ''
-			if (pag==='titleBlog') {
-				titleBlog = this.quitarEspacios(data.BlogPostTitle)
+		seleccion(opc){
+			if (opc.tipo==='Categorias') {
+				this.ir("mostrarCategorias",opc.datos)
+			}else{
+				this.ir("Prosker",opc.datos.idEnc)
+
 			}
+		},
+		ir(pag,data){
 			this.$router.push({
 				name: pag, 
-				params: {data,titleBlog}
-			})
+				params: {data}
+			}) 
 		},
-		quitarEspacios(nombre){
-			return nombre.replace(/ /g, "-").toLowerCase()
+		cambiarOpcion(){
+			clearInterval(this.tiempo)
+			if (this.opcion===this.slider.length-1) {
+				this.opcion=0
+				
+			}else{
+				this.opcion++
+			}
+			this.comenzarCuentaRegresiva()
 		}
 	},
+
 }
 </script>
 <style scoped>
-	section{
+	article{
 		width: 100%;
-		min-height: 45vh;
-		
+		/* text-align: center; */
 	}
-	h1{
-		font-size: 3em;
-		color: var(--d-color);
-		font-weight: 800;
-		margin-top: 1.5em;
-	}
-	h2{
-		font-size: 2em;
-		color: var(--c-color);
-		font-weight: 800;
-		padding: 1em 0;
-	}
-	h3{
-		margin-top: .5em;
-		font-size: 1.5em;
-		color: var(--d-color);
-		font-weight: 800;
-	}
-	.fondoTitulo{
-		width: 100%;
-		height: 100px;
-		position: absolute;
-		top: 0;
-		z-index: -1;
-		background-color: var(--a-color);
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		flex-wrap: wrap;
-	}
-	.separador{
-		margin-top: -60px;
+	img{
 		width: 100%;
 		height: auto;
-		background-color: transparent;
-		border: none;
 	}
-	.contenedorPrincipal{
+	h1{
+		color: var(--e-color);
+		font-weight: 900;
+		font-size: 2em;
+		margin-left: 40px;
+	}
+	.imagenHome{
 		width: 100%;
-		background-color: var(--d-color);
-		/* margin-top: 100px; */
-		text-align: center;
-		padding-bottom: 3em;
-	}
-	.contenedor {
-		width: 100%;
-		margin: 2em auto 0 ;
-		padding: 2em 0 4em;
-		
-		/* column-count: 2;
-        column-gap: 2em; */
-		display: flex;
-		justify-content: space-around;	
-		text-align: justify;	
-		flex-wrap: wrap;
-	}
-	.fechaBlog  {
-		padding: 10px 0;
-		margin: 0;
-		color: #a8a8a8
-	}
-
-	.tituloBlog{
-		color: var(--a-color);
-	}
-	.textoBlog  {
-		padding: 5px 0;
-		
-	}
-
-
-	.imgBlog {
-		width: 95%;
-		height: 200px;
-		margin: 5px;
-		border: 2px solid var(--d-color);
-		border-radius: 7px;
-		box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-		object-fit: cover;
-		cursor: pointer;
-	}
-	.blogs {
-		width: 100%;
-		max-width: 450px;
-		padding: 20px;
-	}
-	.blogs h3{
-		text-shadow: none
-	}
-
-	.blogs button{
-		float: right;
-		width: 100px;
-		padding: 10px;
-	}
-
-	.imgBlog:hover{
-		opacity: .5;
-		text-decoration: none;
-	}
-	.fondoBlog{
-		width: 100%;
-		height: 300px;
-		object-fit: cover;
-		margin: auto;
-		
-	}
-
-
-	.flag{
-		width: 100%;
-		height: 50px;
-		box-sizing: content-box;
-		/* padding-top: 15px; */
-		position: relative;
-		background: transparent;
-		color: white;
-		font-size: 11px;
-		letter-spacing: 0.2em;
-		text-align: center;
-		text-transform: uppercase;
-		margin-top: -53px;
-	}
-	.flag:after {
-		content: "";
+		height: 400px;
 		position: absolute;
+		top: 0;
 		left: 0;
-		bottom: 0;
-		width: 0;
-		height: 0;
-		border-top: 60px solid transparent;
-		border-left: 50vw solid var(--d-color);
-		border-right: 50vw solid var(--d-color);
-    }
-	.contenedorPrincipal .titulos{
-		width: 50%;
-		position: absolute;
-		margin: auto;
-		margin-top: -250px;
-		z-index: 10000;
-		color: #fff;
+		z-index: -1;
+		animation: aparecer2 2s ease;
+		object-fit: cover;
+	}
+	.fondo{
+		width: 100%;
+		height: 280px;
+		padding-top: 20px;
+		display: flex;
+		flex-wrap: nowrap;
+		justify-content: flex-start;
+		align-items: center;
+		z-index: 1;
 		text-align: center;
-		left: 50vw;
-		margin-left: -25vw;
+		/* background-color: red; */
 	}
-	.titulos h1,h3{
-		margin: 0;
-		color: var(--d-color);
-		text-shadow: 0 0 7px rgb(97, 97, 97)
+	.fondo div{
+		margin-bottom: 30px;
 	}
-	.tags{
-		background-color: var(--c-color);
-		color: var(--e-color);
-		padding: 10px;
-		margin: 5px;
-		border: none;
-		outline: none;
-		cursor: pointer;
+	.fondo .derecha{
+		width: 60%;
+		justify-content: center;
+		margin-left: 6vw;
 	}
-	.categorias{
-		background-color: var(--h-color);
-		color: var(--e-color);
-		padding: 10px;
-		margin: 3px;
-		border: none;
-		outline: none;
-		border-radius: 7px;
-		cursor: pointer;
-		text-transform: uppercase;
+	.fondo .izquierda{
+		width: 30%;
+		display: flex;
+		justify-content: flex-end;
+	}
+	.banner{
+		background-image: url('@/assets/img/banner.jpg');
+		background-position: left;
+		background-size: cover;
+		background-repeat: no-repeat;
+		width: 100%;
+		min-height: 500px;
+		margin-top:-80px; /*Activar cuando no haya publicidad*/
+		z-index: -1;
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+	}
+	.banner div{
+		width: 40%;
+		margin: 0 80px;
+		text-align: right;
+	}
+	.banner div h2{
+		font-size: 1.6em;
+		color: var(--c-color);
+	}
+	.banner div h3{
+		font-size: 1.2em;
+		color: var(--c-color);
+		font-weight: 200;
+		line-height: 1.5;
+	}
+	.banner div button{
+		width: 160px;
+	}
+	.banner2 {
+		background-color: var(--d-color);
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		grid-template-rows: 1fr;
+		grid-column-gap: 0px;
+		grid-row-gap: 0px;
 	}
 
-	@media (max-width: 700px) {
-		.contenedorPrincipal .titulos{
-			width: 90%;
-			left: 50vw;
-			margin-left: -45vw;
-			margin-top: -220px;
+	.div1 { grid-area: 1 / 1 / 2 / 2; }
+	.div2 { grid-area: 1 / 2 / 2 / 3; }
+
+	.div1,.div2{
+		min-height: 500px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	.div1 div{
+		width: 80%;
+		margin-left: 120px;
+	}
+	.div1 div h2{
+		font-size: 2.1em;
+		color: var(--c-color);
+	}
+	.div1 div h3{
+		font-size: 1.4em;
+		color: var(--c-color);
+		font-weight: 200;
+		line-height: 1.5;
+	}
+	.contenedorPublicidad {
+		display: grid;
+		grid-template-columns: 1fr 180px;
+		grid-template-rows: 1fr;
+		grid-column-gap: 0px;
+		grid-row-gap: 0px;
+	}
+
+	.pub1 { grid-area: 1 / 1 / 2 / 2; }
+	.pub2 { grid-area: 1 / 2 / 2 / 3; }
+	.pub2{
+		padding-top: 3em;
+	}
+
+	.contenedorPublicidad2 {
+		display: grid;
+		grid-template-columns: 1fr 310px;
+		grid-template-rows: 1fr;
+		grid-column-gap: 0px;
+		grid-row-gap: 0px;
+	}
+
+	.pub21 { grid-area: 1 / 1 / 2 / 2; }
+	.pub22 { grid-area: 1 / 2 / 2 / 3; }
+
+	.pub22 { 
+		background-color: var(--d-color); 
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	.contenedorPublicidad3{
+		position: -webkit-sticky;
+		position: sticky;
+		bottom: 0;
+	}
+
+	.botones{
+		width: 100%;
+		margin: auto;
+		display: flex;
+		justify-content: center;
+		margin-top: -10px;
+		margin-bottom: 20px;
+	}
+	.botones button{
+		width: 10px;
+		height: 10px;
+		padding: 5px;
+		border-radius: 10px;
+		border: 2px solid #fff;
+		background-color: transparent;
+		outline: none;
+	}
+	.buscar{
+		width: 100%;
+		display: flex;
+		justify-content: center;
+	}
+	.espacio{
+		min-height: 20vh
+	}
+	.textoTitulo{
+		min-height: 120px;
+		display: block;
+		/* padding-top: 10px; */
+		/* align-items: center;
+		justify-content: center;
+		min-width: 100%; */
+	}
+	.mostrarProskers{
+		width: 100%;
+		display: flex;
+		justify-content: center;
+		margin-top: 2em;
+	}
+
+	.categorias{
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 100%;
+	}
+	@media (max-width: 1000px) {
+		.fondo{
+			padding-top: 100px;
+			/* width: 70%; */
+			margin: auto;
+			justify-content: center;
 		}
-		.blogs {
+		.derecha{
+			margin-left: 0;
+		}
+		h1{
+			margin-left: 0;
+			font-size: 1.8em;
+		}
+		.banner{
+			background-position: right;
+		}
+		.banner div{
 			width: 100%;
-			max-width: 350px;
+			margin: 0 50px;
+			text-align: center;
 		}
-		.titulos h1{
-			font-size: 2em;
+		.banner2 {
+			grid-template-columns: 1fr;
+			grid-template-rows: repeat(2, 1fr);
 		}
-		.titulos h3{
-			font-size: 1.4em;
+
+		.div1 { grid-area: 1 / 1 / 2 / 2; }
+		.div2 { grid-area: 2 / 1 / 3 / 2; }
+		.div1 div{
+			width: 100%;
+			margin: 50px;
+			text-align: center;
+		}
+		.div1 div h2{
+			font-size: 1.6em;
+		}
+		.div1 div h3{
+			font-size: 1.2em;
 		}
 	}
+
+	@media (max-width: 900px) {
+		.fondo{
+			padding-top: 100px;
+			flex-wrap: wrap;
+			
+		}
+		.fondo .izquierda{
+			width: 100%;
+		}
+	}
+		
+	@media (max-width: 550px) {
+		.fondo{
+			padding-top: 100px;
+			width: 90%;
+		}
+		.fondo .derecha {
+			width: 100%;
+			margin-left: 0;
+		}
+
+		.derecha div{
+			width: 100%;
+		}
+		.banner{
+			width: 100%;
+		}
+		.banner div{
+			margin: 0;
+			text-align: center;
+		}
+		.div1 div{
+			margin: 10px;
+		}
+		.textoTitulo{
+			width: 100%;
+		}
+		.textoTitulo h1{
+			min-height: 160px;
+			font-size: 1.7em;
+			width: 100%;
+		}
+		.botones{
+			margin-top: 0;
+		}
+		.contenedorPublicidad {
+			grid-template-columns: 1fr;
+			grid-template-rows: 1fr 5px;
+		}
+		.pub1 { grid-area: 1 / 1 / 2 / 2; }
+		.pub2 { grid-area: 2 / 1 / 3 / 2; }
+		.contenedorPublicidad2 {
+			grid-template-columns: 100%;
+			grid-template-rows: 1fr 260px;
+		}
+		.pub21 { grid-area: 1 / 1 / 2 / 2; }
+		.pub22 { grid-area: 2 / 1 / 3 / 2; }
+	}
+	@media (max-width: 1200px) {
+		.banner{
+			margin-top: -40px;
+		}
+
+	}
+
 </style>

@@ -1,29 +1,29 @@
 <template>
 	<header>
 		<span class="div1">
-			<a :href="`${urlPrincipal}/#/`">
+			<a @click="ir('Home')">
 				<img src="@/assets/img/logowebprosk.png" alt="logo prosk" class="logo hvr-pulse" >
 			</a>
 			<button class="botonAceptar botonMenu" v-if="ancho<1000" @click="mostrarMenu=!mostrarMenu"><i class="material-icons">{{!mostrarMenu ? 'menu':'close'}}</i></button>
 		</span>
 		<nav class="div2" v-if="mostrarMenu|| ancho>1000">
 			<div @mouseover="submenu=true" @mouseleave="submenu=false" class="menu" style="padding-right: 0">
-				<a :href="`${urlPrincipal}/#/quienes`" class="menu" @mouseover="submenu=true" @mouseleave="submenu=false">QUIENES SOMOS </a>
+				<a @click="ir('quienesSomos')" class="menu" @mouseover="submenu=true" @mouseleave="submenu=false">QUIENES SOMOS </a>
 				<transition name="fade">
 					<div class="submenu" v-if="submenu || ancho<1000">
-						<a :href="`${urlPrincipal}/#/funcionamiento`">Funcionamiento</a>
-						<a :href="`${urlPrincipal}/#/prensa`">Prensa</a>
+						<a @click="ir('funcionamiento')">Funcionamiento</a>
+						<a @click="ir('prensa')">Prensa</a>
 					</div>
 				</transition>
 			</div>
 			<p>|</p>
-			<a :href="`${urlPrincipal}/#/proskers`" class="menu">PROSKERS</a>
+			<a @click="ir('proskers')" class="menu">PROSKERS</a>
 			<p>|</p>
-			<a :href="`${urlPrincipal}/#/academy`" class="menu">PROSK ACADEMY</a>
+			<a @click="ir('academy')" class="menu">PROSK ACADEMY</a>
 			<p>|</p>
-			<a @click="ir('Home')" class="menu">BLOG</a>
+			<a @click="ir('blog')" class="menu">BLOG</a>
 			<p>|</p>
-			<a :href="`${urlPrincipal}/#/contacto`" class="menu">CONTACTO</a>
+			<a @click="ir('contacto')" class="menu">CONTACTO</a>
 		</nav>
 		<span class="div3" v-if="mostrarMenu || ancho>1000">
 			<button class="botonNotificaciones" v-if="usuario.ok" @click="mostrarChat=!mostrarChat"><i class="material-icons">notifications</i></button>
@@ -57,10 +57,7 @@ export default {
 			contadorBusqueda: 0,
 		}
 	},
-	created() {
-		// console.log('nuevo Mensaje:',this.nuevoMensaje)
-	},
-	
+
 	computed: {
 		urlPrincipal(){
 			return 'https://prosk.org'
@@ -108,7 +105,7 @@ export default {
 				this.$router.push({
 					name: pag, 
 					params: {para,titleAcademy}
-				}).catch(() => {})	
+				})
 			}
 		},
 		quitarEspacios(nombre){

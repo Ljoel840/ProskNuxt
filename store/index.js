@@ -3,17 +3,23 @@ import extraerBlog from '../middleware/extraerBlog'
 export const state = () => ({
 	// ancho: window.innerWidth,
 	// 	scrollY: window.scrollY,
-		proskersDestacados:[],
-		nuevoMensaje: 0,
-		conteoAnteriorMensaje:0,
-		ahora: null,
-		chatAbierto: {},
-		marcadores:[],
-		seo:{
-			datos:[],
-			error: null,
-			cargando: true
-		}
+	proskersDestacados:[],
+	nuevoMensaje: 0,
+	conteoAnteriorMensaje:0,
+	ahora: null,
+	chatAbierto: {},
+	marcadores:[],
+	seo:{
+		datos:[],
+		error: null,
+		cargando: true
+	},
+	miPosicion:{
+		posicion: {},
+		error: null,
+		titulo: 'YO',
+		obtenerPosicion: false
+	},
 })
 
 
@@ -28,6 +34,21 @@ export const mutations = {
 		}else{
 			state.seo.error = error
 		}
+	},
+	cargarPosicion(state){
+		if(!("geolocation" in navigator)) {
+			state.miPosicion.error = 'Geolocalización no disponible';
+		}else{
+			state.miPosicion.obtenerPosicion = true;
+			navigator.geolocation.getCurrentPosition(pos => {
+				state.miPosicion.obtenerPosicion = false;
+				state.miPosicion.posicion = pos;
+			}, err => {
+				state.miPosicion.obtenerPosicion = false;
+				state.miPosicion.error = err.message;
+			})
+		}
+
 	},
 }
 

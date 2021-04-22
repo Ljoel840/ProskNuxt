@@ -18,6 +18,8 @@ export default {
 		// this.$store.commit('cargarCategoriasBlog')
 		// this.$store.commit('cargarTagsBlog')
 		// this.$store.commit("cargarBlog");
+		this.$store.dispatch("proskers/getProskers")
+		this.$store.dispatch("publicaciones/getPublicaciones")
 		this.almacenamientoLocal()
 	},
 	methods: {

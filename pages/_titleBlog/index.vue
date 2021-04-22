@@ -113,7 +113,7 @@ export default {
 			this.$router.push({
 				name: pag, 
 				params: {data}
-			}).catch(() => {})
+			}) 
 		},
 		quitarGuiones(nombre){
 			return nombre.replace(/-/g, " ").toLowerCase()
